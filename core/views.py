@@ -2,8 +2,9 @@ from django.shortcuts import render, redirect
 from django.http import HttpResponse
 from django.contrib.auth.models import User, auth
 from django.contrib import messages
-from .models import Profile, Post
+from .models import Profile, Post, LikePost
 from django.contrib.auth.decorators import login_required
+from django.shortcuts import get_object_or_404, redirect
 
 
 @login_required(login_url='login')
@@ -11,20 +12,43 @@ def index(request):
     try:
         user_profile = Profile.objects.get(user=request.user)
     except Profile.DoesNotExist:
-
         user_profile = None
 
-    return render(request, 'index.html', {'user_profile': user_profile})
+    posts = Post.objects.all()
+   # user_profile = Profile.objects.get(user=request.user)
+
+    return render(request, 'index.html', {'user_profile': user_profile, 'posts': posts})
 
 
+def like_post(request):
+    username = request.user.username
+    post_id = request.GET.get('post_id')
+    post = get_object_or_404(Post, id=post_id)
+
+    like_filter = LikePost.objects.filter(post_id=post_id, username=username)
+
+    if like_filter.exists():
+        like_filter.delete()
+        post.no_of_likes -= 1
+    else:
+        new_like = LikePost.objects.create(post_id=post_id, username=username)
+        new_like.save()
+        post.no_of_likes += 1
+
+    post.save()
+    return redirect('/')
+
+
+@login_required(login_url='login')
 def upload(request):
     if request.method == 'POST':
-        user = request.user.username
+        user_profile = Profile.objects.get(user=request.user)
+        user = user_profile
         image = request.FILES.get('image_upload')
         caption = request.POST.get('caption')
 
         new_post = Post.objects.create(
-            user=user,
+            user_profile=user,
             image=image,
             caption=caption,
         )
