@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect
 from django.http import HttpResponse
 from django.contrib.auth.models import User, auth
 from django.contrib import messages
-from .models import Profile, Post, LikePost
+from .models import Profile, Post, LikePost, FollowersCount
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, redirect
 
@@ -20,6 +20,43 @@ def index(request):
     return render(request, 'index.html', {'user_profile': user_profile, 'posts': posts})
 
 
+def follow(request):
+    if request.method == 'POST':
+        follower = request.POST.get('follower')
+        user = request.POST['user']
+        # print(follower,user)
+        user_object = get_object_or_404(User, username=user)
+        # print(user_object.id)
+
+        if FollowersCount.objects.filter(follower=follower, user=user_object).first():
+            delete_follower = FollowersCount.objects.get(
+                follower=follower, user=user_object)
+            delete_follower.delete()
+            return redirect('/profile/'+user_object.id)
+        else:
+            new_follower = FollowersCount(follower=follower, user=user_object)
+            new_follower.save()
+            return redirect('/profile/'+user_object.id)
+    return redirect('/')
+
+
+@login_required(login_url='login')
+def ProfileView(request, pk):
+    try:
+        user_profile = Profile.objects.get(user=pk)
+    except Profile.DoesNotExist:
+        user_profile = None
+    user_posts = Post.objects.filter(user_profile=user_profile).count()
+    posts = Post.objects.filter(user_profile=user_profile)
+
+    context = {'user_profile': user_profile,
+               'user_posts': user_posts,
+               'posts': posts
+               }
+    return render(request, 'profile.html', context)
+
+
+@login_required(login_url='login')
 def like_post(request):
     username = request.user.username
     post_id = request.GET.get('post_id')
@@ -104,7 +141,7 @@ def signup(request):
                 # creating a profile object for the new user
                 user_model = User.objects.get(username=username)
                 new_profile = Profile.objects.create(
-                    user=user_model, id_user=user_model.id)
+                    user=user_model)
                 new_profile.save()
                 return redirect('settings')
         else:
