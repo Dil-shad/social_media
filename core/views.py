@@ -24,19 +24,17 @@ def follow(request):
     if request.method == 'POST':
         follower = request.POST.get('follower')
         user = request.POST['user']
-        # print(follower,user)
+        
         user_object = get_object_or_404(User, username=user)
-        # print(user_object.id)
 
-        if FollowersCount.objects.filter(follower=follower, user=user_object).first():
-            delete_follower = FollowersCount.objects.get(
-                follower=follower, user=user_object)
+        if FollowersCount.objects.filter(follower=follower, user=user_object).exists():
+            delete_follower = FollowersCount.objects.get(follower=follower, user=user_object)
             delete_follower.delete()
-            return redirect('/profile/'+user_object.id)
+            return redirect('/profile/' + str(user_object.id))
         else:
             new_follower = FollowersCount(follower=follower, user=user_object)
             new_follower.save()
-            return redirect('/profile/'+user_object.id)
+            return redirect('/profile/' + str(user_object.id))
     return redirect('/')
 
 
