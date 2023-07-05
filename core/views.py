@@ -5,7 +5,8 @@ from django.contrib import messages
 from .models import Profile, Post, LikePost, FollowersCount
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, redirect
-#411
+from itertools import chain
+
 
 @login_required(login_url='login')
 def index(request):
@@ -14,10 +15,18 @@ def index(request):
     except Profile.DoesNotExist:
         user_profile = None
 
-    posts = Post.objects.all()
-   # user_profile = Profile.objects.get(user=request.user)
+    user_following_list = []
+    feed = []
 
-    return render(request, 'index.html', {'user_profile': user_profile, 'posts': posts})
+    user_following = FollowersCount.objects.filter(follower=request.user).values_list()
+    print(user_following)
+    
+
+
+
+    posts = Post.objects.all()
+
+    return render(request, 'index.html', {'user_profile': user_profile, 'posts': feed})
 
 
 def follow(request):
