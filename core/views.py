@@ -24,11 +24,12 @@ def follow(request):
     if request.method == 'POST':
         follower = request.POST.get('follower')
         user = request.POST['user']
-        
+
         user_object = get_object_or_404(User, username=user)
 
         if FollowersCount.objects.filter(follower=follower, user=user_object).exists():
-            delete_follower = FollowersCount.objects.get(follower=follower, user=user_object)
+            delete_follower = FollowersCount.objects.get(
+                follower=follower, user=user_object)
             delete_follower.delete()
             return redirect('/profile/' + str(user_object.id))
         else:
@@ -47,9 +48,25 @@ def ProfileView(request, pk):
     user_posts = Post.objects.filter(user_profile=user_profile).count()
     posts = Post.objects.filter(user_profile=user_profile)
 
+    follower = request.user.username
+    user = user_profile
+    # print(user_profile)
+
+    # chk weather followed or not
+    if FollowersCount.objects.filter(follower=follower, user=user).exists():
+        button_text = 'Unfollow'
+    else:
+        button_text = 'Follow'
+
+    user_followers = FollowersCount.objects.filter(user=user).count()
+    user_following = FollowersCount.objects.filter(follower=user).count()
+
     context = {'user_profile': user_profile,
                'user_posts': user_posts,
-               'posts': posts
+               'posts': posts,
+               'button_text': button_text,
+               'user_followers': user_followers,
+               'user_following': user_following
                }
     return render(request, 'profile.html', context)
 

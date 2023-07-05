@@ -1,7 +1,8 @@
 {
     "cSpell.words": [
         "profileimg",
-        "signin"
+        "signin",
+        "Unfollow"
     ],
     "python.testing.pytestArgs": [
         "core"
