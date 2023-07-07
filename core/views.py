@@ -6,27 +6,46 @@ from .models import Profile, Post, LikePost, FollowersCount
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, redirect
 from itertools import chain
+from django.core.exceptions import ObjectDoesNotExist
+from django.db.models import Q
 
 
 @login_required(login_url='login')
 def index(request):
     try:
-        user_profile = Profile.objects.get(user=request.user)
-    except Profile.DoesNotExist:
-        user_profile = None
+        logged_user_profile = get_object_or_404(Profile, user=request.user)
+    except:
+        logged_user_profile = None
 
-    user_following_list = []
-    feed = []
+    # retrieving user followed users post
 
-    user_following = FollowersCount.objects.filter(follower=request.user).values_list()
-    print(user_following)
-    
+    user_following_profiles = []
+    feed_posts = []
 
+    user_following = FollowersCount.objects.filter(
+        follower=request.user.username)
 
+    for follower_count in user_following:
+        try:
+            user_profile = Profile.objects.get(user__username=follower_count)
+            user_following_profiles.append(user_profile)
+        except ObjectDoesNotExist:
+            pass
 
-    posts = Post.objects.all()
+    for following_profile in user_following_profiles:
+        feed_list = Post.objects.filter(Q(user_profile=following_profile) | Q(
+            user_profile=logged_user_profile)).order_by('-created_at')
+        feed_posts.extend(feed_list)
 
-    return render(request, 'index.html', {'user_profile': user_profile, 'posts': feed})
+    # if the user does not follow any other users, show their own posts
+    if not feed_posts:
+        try:
+            feed_posts = Post.objects.filter(
+                user_profile=logged_user_profile).order_by('-created_at')
+        except:
+            feed_posts = []
+
+    return render(request, 'index.html', {'user_profile': logged_user_profile, 'posts': feed_posts})
 
 
 def follow(request):
@@ -114,7 +133,7 @@ def upload(request):
             caption=caption,
         )
         new_post.save()
-    return redirect('/')
+    return redirect('index')
 
 
 @login_required(login_url='login')
