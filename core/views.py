@@ -48,6 +48,29 @@ def index(request):
     return render(request, 'index.html', {'user_profile': logged_user_profile, 'posts': feed_posts})
 
 
+def search(request):
+    try:
+        logged_user_profile = get_object_or_404(Profile, user=request.user)
+    except:
+        logged_user_profile = None
+
+    if request.method == 'POST':
+        username = request.POST.get('username')
+        try:
+            user_object = Profile.objects.filter(
+                user__username__icontains=username)
+
+        except ObjectDoesNotExist:
+            user_object = None
+
+    context = {
+        'user_profile': logged_user_profile,
+        'search_qs': user_object,
+        'username': username,
+    }
+    return render(request, 'search.html', context)
+
+
 def follow(request):
     if request.method == 'POST':
         follower = request.POST.get('follower')
