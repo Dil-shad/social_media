@@ -209,21 +209,21 @@
         <div class="container">
             <div class="row ng-scope">
                 <div class="col-md-3 col-md-push-9">
-                    <h4>Results For <span class="fw-semi-bold"><b>" {{username}} "</b></span></h4>
+                    <h4>Results For <span class="fw-semi-bold"><b>" {{query}} "</b></span></h4>
 
 
                 </div>
                 <div class="col-md-9 col-md-pull-3">
                     {% for users in search_qs %}
                     <section class="search-result-item">
-                        <a class="image-link" href="/profile/{{users.user}}">
+                        <a class="image-link" href="/profile/{{users.user.id}}">
                             <img class="image" src="{{users.profileimg.url}}">
                         </a>
                         <div class="search-result-item-body">
                             <div class="row">
                                 <div class="col-sm-9">
                                     <h4 class="search-result-item-heading">
-                                        <a href="/profile/{{users.user}}">
+                                        <a href="/profile/{{users.user.id}}">
                                             <b>@{{users.user}}</b>
                                         </a>
                                     </h4>

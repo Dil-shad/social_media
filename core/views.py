@@ -8,6 +8,7 @@ from django.shortcuts import get_object_or_404, redirect
 from itertools import chain
 from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Q
+import random
 
 
 @login_required(login_url='login')
@@ -45,7 +46,22 @@ def index(request):
         except:
             feed_posts = []
 
-    return render(request, 'index.html', {'user_profile': logged_user_profile, 'posts': feed_posts})
+    # users suggestions taking
+    all_users = User.objects.all().exclude(
+        username=request.user.username).exclude(is_superuser=True)
+    user_following_all = []
+
+    for user in user_following:
+        user_list = User.objects.get(username=user)
+        user_following_all.append(user_list)
+
+    users_suggestion_list = [x for x in all_users if x not in user_following_all]
+    random.shuffle(users_suggestion_list)
+   
+    context = {'user_profile': logged_user_profile,
+               'posts': feed_posts, 'suggestions': users_suggestion_list}
+    
+    return render(request, 'index.html', context)
 
 
 def search(request):
@@ -54,21 +70,24 @@ def search(request):
     except:
         logged_user_profile = None
 
-    if request.method == 'POST':
-        username = request.POST.get('username')
-        try:
-            user_object = Profile.objects.filter(
-                user__username__icontains=username)
+    try:
+        if request.method == 'POST':
+            query = request.POST.get('username')
+            try:
+                user_object = Profile.objects.filter(
+                    user__username__icontains=query)
 
-        except ObjectDoesNotExist:
-            user_object = None
+            except ObjectDoesNotExist:
+                user_object = None
 
-    context = {
-        'user_profile': logged_user_profile,
-        'search_qs': user_object,
-        'username': username,
-    }
-    return render(request, 'search.html', context)
+        context = {
+            'user_profile': logged_user_profile,
+            'search_qs': user_object,
+            'query': query,
+        }
+        return render(request, 'search.html', context)
+    except:
+        return redirect('/')
 
 
 def follow(request):
