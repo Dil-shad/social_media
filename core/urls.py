@@ -14,6 +14,8 @@ urlpatterns = [
     path('search', views.search, name='search'),
     path('profile/<str:pk>', views.ProfileView, name='profile'),
     path('like-post', views.like_post, name='like-post'),
+    path('delete-post/<str:pk>', views.deletePost, name='delete-post'),
+    
 
 
 

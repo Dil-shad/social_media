@@ -9,6 +9,7 @@ from itertools import chain
 from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Q
 import random
+from django.urls import reverse_lazy
 
 
 @login_required(login_url='login')
@@ -55,12 +56,13 @@ def index(request):
         user_list = User.objects.get(username=user)
         user_following_all.append(user_list)
 
-    users_suggestion_list = [x for x in all_users if x not in user_following_all]
+    users_suggestion_list = [
+        x for x in all_users if x not in user_following_all]
     random.shuffle(users_suggestion_list)
-   
+
     context = {'user_profile': logged_user_profile,
                'posts': feed_posts, 'suggestions': users_suggestion_list}
-    
+
     return render(request, 'index.html', context)
 
 
@@ -257,3 +259,12 @@ def signin(request):
 def logout(request):
     auth.logout(request)
     return redirect('login')
+
+
+@login_required(login_url='login')
+def deletePost(request, pk):
+    print(pk)
+    post = Post.objects.get(id=pk)
+    post.delete()
+
+    return redirect('index')

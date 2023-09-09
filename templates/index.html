@@ -259,12 +259,13 @@
                                 uk-drop="mode: hover;pos: top-right">
 
                                 <ul class="space-y-1">
-                                    <li>
+                                     <li>
                                         <a href="#"
                                             class="flex items-center px-3 py-2 hover:bg-gray-200 hover:text-gray-800 rounded-md ">
                                             <i class="uil-share-alt mr-1"></i> Share
                                         </a>
                                     </li>
+                                    {% comment %}
                                     <li>
                                         <a href="#"
                                             class="flex items-center px-3 py-2 hover:bg-gray-200 hover:text-gray-800 rounded-md ">
@@ -285,12 +286,17 @@
                                     </li>
                                     <li>
                                         <hr class="-mx-2 my-2 ">
-                                    </li>
+                                    </li> {% endcomment %}
                                     <li>
-                                        <a href="#"
-                                            class="flex items-center px-3 py-2 text-red-500 hover:bg-red-100 hover:text-red-500 rounded-md ">
-                                            <i class="uil-trash-alt mr-1"></i> Delete
-                                        </a>
+                                        
+                                        {% if post.user_profile.user.id == request.user.id %}
+                                        <a href="{% url 'delete-post' post.id %}"
+                                        class="flex items-center px-3 py-2 text-red-500 hover:bg-red-100 hover:text-red-500 rounded-md ">
+                                        <i class="uil-trash-alt mr-1"></i> Delete
+                                    </a>
+                                        {% endif %}
+                                            
+                                       
                                     </li>
                                 </ul>
 
